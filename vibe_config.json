@@ -1,0 +1,44 @@
+{
+    "Ralph Lauren": {
+        "master_prompt": "A slender model with natural, minimal makeup and loosely waved hair stands in a confident, relaxed pose with one foot forward, holding a small clutch. She wears a knee-length navy blue sequined dress with a gold chain pattern, layered under an open brown velvet coat. The dress texture is a mix of shimmering sequins and smooth velvet, with a pair of strappy gold sandals. The setting is a minimalist room with white walls, classic crown molding, and light herringbone wood floors, illuminated by soft, natural window light. The shot is a full-body photograph.",
+        "lighting": "Golden hour, soft directional sunlight, warm glow",
+        "model_style": "Classic American, country club, wind-swept hair, natural makeup",
+        "pose": "Relaxed, candid, walking outdoors, looking away",
+        "environment": "Polo field, Hamptons estate, classic architecture"
+    },
+    "Liu Jo": {
+        "master_prompt": "A full-length studio photograph of a model with dark, shoulder-length hair and a fringe, standing against a seamless white background. She wears a camel-colored knit turtleneck dress with pockets, a black leather jacket slung over her shoulder, and black knee-high boots. She holds a small black leather handbag. The lighting is soft, even studio light, highlighting the ribbed texture of the knitwear and the smooth leather. Her expression is neutral. The overall feel is chic, modern, and tailored.",
+        "lighting": "High contrast, studio flash, bright and crisp",
+        "model_style": "Italian glamour, confident, sharp eyeliner, sleek hair",
+        "pose": "Dynamic, strong angles, hand on hip, direct eye contact",
+        "environment": "Minimalist studio, urban street, chic interior"
+    },
+    "Zara": {
+        "master_prompt": "A medium shot fashion photograph of a model with strong, angular features and dark hair in a sleek low bun, standing in semi-profile against a stark minimalist white studio wall. She wears a tailored, matte black crepe midi dress with a structured square neckline and short sleeves. Her gaze is neutral. Bright, clean studio lighting casts a sharp, defined shadow on the pale grey concrete floor behind her.",
+        "lighting": "Harsh flash, direct lighting, slight underexposure on background",
+        "model_style": "Edgy, contemporary, minimalist makeup, structured hair",
+        "pose": "Avant-garde, slouching, unconventional framing, editorial",
+        "environment": "Blank studio wall, raw concrete, abstract backgrounds"
+    },
+    "Liverpool": {
+        "master_prompt": "A full-body fashion photograph of a tall woman with brown hair standing poised against a seamless white studio background. She wears an elegant, floor-length evening gown combining black sequins, gold brocade patterns, and deep blue chiffon, featuring feather-trimmed sleeves and a beaded V-neckline. Her hands are casually clasped in front. The lighting is bright and even, highlighting the rich, textured fabric and the subtle shimmer of the sequins. She wears minimalist silver heels and delicate gold hoop earrings.",
+        "lighting": "Bright, even studio lighting, high key",
+        "model_style": "Approachable, diverse, commercial commercial, everyday wear",
+        "pose": "Smiling, relatable, functional movement",
+        "environment": "Clean color backdrops, simple lifestyle settings"
+    },
+    "Neiman Marcus": {
+        "master_prompt": "A full-length studio fashion photograph set against a seamless, light grey background with soft, diffused studio lighting. A female model with a slender build stands facing forward, her arms relaxed by her sides. She wears an elegant, mid-length dress featuring a draped or wrapped silhouette, crafted from a luxurious, textured fabric like silk or jacquard. The dress, in a rich color like deep blue, red, or pink with floral patterns or embroidered details, is accessorized with minimalist heels. Her hair is neatly styled, and she wears minimal jewelry.",
+        "lighting": "Soft spotlight, dramatic shadows, premium studio glow",
+        "model_style": "High-fashion, aloof, flawless finish, editorial",
+        "pose": "Statuesque, elegant, showcasing the garment structure",
+        "environment": "Luxurious textures, velvet drapery, marble floors"
+    },
+    "Nordstrom": {
+        "master_prompt": "A full-length fashion photograph of a full-figured woman with long, dark wavy hair, posing against a seamless white studio background with bright, even light and soft shadows. She stands with one hand confidently on her hip, wearing a shimmering metallic gold satin off-the-shoulder gown. The dress features elegant draping, a ruched bodice, and a high side slit revealing her leg, with clear heeled sandals. Her expression is poised and confident. The fabric catches the light, emphasizing its smooth, liquid-like texture.",
+        "lighting": "Clean, bright, natural looking studio light",
+        "model_style": "Polished, commercial, accessible luxury",
+        "pose": "Standard ecommerce, clear front/side views, friendly",
+        "environment": "White seamless background, clean grey"
+    }
+}
