@@ -1,0 +1,11 @@
+[theme]
+# Primary accent color for interactive elements
+primaryColor = "#268bd2"
+# Background color for the main content area (Solarized Light Tan)
+backgroundColor = "#fdf6e3"
+# Background color used for the sidebar and most interactive widgets
+secondaryBackgroundColor = "#eee8d5"
+# Text color, suitable for the light background
+textColor = "#657b83"
+# Font family
+font = "sans serif"

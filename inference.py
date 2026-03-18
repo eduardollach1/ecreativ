@@ -8,10 +8,14 @@ from PIL import Image
 from dotenv import load_dotenv
 import replicate
 
-import google.generativeai as genai
+import google.generativeai as legacy_genai
+from google import genai
+from google.genai.types import RecontextImageSource, ProductImage, RecontextImageConfig, Image as SDKImage
 from google.oauth2.credentials import Credentials
+from google.oauth2 import service_account
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
+import google.auth
 import vertexai
 from vertexai.preview.vision_models import ImageGenerationModel
 
@@ -43,6 +47,45 @@ def authenticate():
     return creds
 
 def init_vertex_ai():
+    # 1. Permanent Cloud Auth: Check for Hugging Face Secret / Env Var
+    gcp_sa_key = os.environ.get("GCP_SA_KEY")
+    if gcp_sa_key:
+        try:
+            sa_info = json.loads(gcp_sa_key)
+            creds = service_account.Credentials.from_service_account_info(sa_info)
+            PROJECT_ID = sa_info.get("project_id", "gen-lang-client-0232437645")
+            vertexai.init(project=PROJECT_ID, location="us-central1", credentials=creds)
+            print("Successfully initialized Vertex AI via GCP_SA_KEY environment variable.")
+            return
+        except Exception as e:
+            print(f"Failed to load GCP_SA_KEY Secret: {e}")
+
+    # 2. Permanent Local Auth: Check for local service_account.json
+    sa_file = os.path.join(BASE_DIR, "service_account.json")
+    if os.path.exists(sa_file):
+        try:
+            creds = service_account.Credentials.from_service_account_file(sa_file)
+            with open(sa_file, 'r') as f:
+                PROJECT_ID = json.load(f).get("project_id", "gen-lang-client-0232437645")
+            vertexai.init(project=PROJECT_ID, location="us-central1", credentials=creds)
+            print("Successfully initialized Vertex AI via local service_account.json.")
+            return
+        except Exception as e:
+            print(f"Failed to load service_account.json: {e}")
+
+    # 3. Fallback: Cloud Run Native ADC
+    try:
+        if os.environ.get("K_SERVICE") or os.environ.get("GOOGLE_CLOUD_PROJECT"):
+            creds, project_id = google.auth.default()
+            PROJECT_ID = project_id or "gen-lang-client-0232437645"
+            vertexai.init(project=PROJECT_ID, location="us-central1", credentials=creds)
+            print("Successfully initialized Vertex AI via Google Cloud ADC.")
+            return
+    except Exception as e:
+        print(f"Fallback to local auth stream: {e}")
+
+    # 4. Final Fallback: The 24-hour Temporary OAuth Login
+    print("Falling back to temporary 24-hour OAuth Token Login...")
     client_secret_file = get_client_secret_file()
     with open(client_secret_file, "r") as f:
         client_config = json.load(f)
@@ -82,8 +125,8 @@ def generate_base_vibe(brand_weights, custom_scene_prompt=None):
     
     # Step 2: Use Gemini 1.5 Pro to blend them into distinct variations
     print("\nAsking Gemini 1.5 Pro to synthesize the final Phase 4 Vibe prompts...")
-    genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
-    model = genai.GenerativeModel("nano-banana-pro-preview")
+    legacy_genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
+    model = legacy_genai.GenerativeModel("nano-banana-pro-preview")
     
     blending_prompt = (
         "You are an expert fashion AI. I have several 'master prompts' from different clothing brands, "
@@ -145,44 +188,53 @@ def generate_base_vibe(brand_weights, custom_scene_prompt=None):
 
 def synthesize_garment(base_vibe_image, garment_image, category, garment_desc):
     """
-    Executes Stage B: Garment Synthesis (Virtual Try-On).
-    Pipes the physical Vertex AI Base Vibe, User's Garment, category text, 
-    and description text directly to Replicate's IDM-VTON endpoint.
+    Executes Stage B: Google Vertex AI Native Virtual Try-On.
+    Pipes the physical Vertex AI Base Vibe and User's Garment natively
+    into the virtual-try-on-001 model for pristine photorealism.
     """
     try:
-        print(f"Triggering IDM-VTON with category: {category} | desc: {garment_desc}")
+        print(f"Triggering virtual-try-on-001 with category: {category} | desc: {garment_desc}")
         
-        # We must buffer the PIL images to bytes so the Replicate SDK can upload them
+        creds = authenticate()
+        from google.auth.transport.requests import Request
+        if creds and not creds.token:
+            creds.refresh(Request())
+            
+        client = genai.Client(
+            vertexai=True, 
+            project="gen-lang-client-0232437645", 
+            location="us-central1", 
+            credentials=creds
+        )
+        
+        # Compress PIL images to bytes, then wrap in SDKImage
         human_img_bytes = io.BytesIO()
         base_vibe_image.save(human_img_bytes, format="JPEG")
-        human_img_bytes.seek(0)
+        sdk_person = SDKImage(image_bytes=human_img_bytes.getvalue())
         
         garm_img_bytes = io.BytesIO()
         garment_image.convert("RGB").save(garm_img_bytes, format="JPEG")
-        garm_img_bytes.seek(0)
+        sdk_garment = SDKImage(image_bytes=garm_img_bytes.getvalue())
 
-        # Call the idm-vton model
-        output = replicate.run(
-            "cuuupid/idm-vton:c871bb9b046607b680449ecbae55fd8c6d945e0a1948644bf2361b3d021d3ff4",
-            input={
-                "crop": False,
-                "seed": 42,
-                "steps": 30,
-                "category": category,
-                "force_dc": False if category != "dresses" else True,
-                "garm_img": garm_img_bytes,
-                "human_img": human_img_bytes,
-                "garment_des": garment_desc
-            }
+        response = client.models.recontext_image(
+            model="virtual-try-on-001",
+            source=RecontextImageSource(
+                person_image=sdk_person,
+                product_images=[
+                    ProductImage(product_image=sdk_garment)
+                ],
+            ),
+            config=RecontextImageConfig(
+                output_mime_type="image/jpeg",
+                number_of_images=1,
+            )
         )
         
-        print(f"IDM-VTON finished successfully. Generated output URL: {output}")
-        # Parse the output
-        if output:
-            response = requests.get(output)
-            return Image.open(io.BytesIO(response.content))
+        print(f"Google Native VTO finished successfully.")
+        if response.generated_images:
+            return Image.open(io.BytesIO(response.generated_images[0].image.image_bytes)).convert("RGB")
         return base_vibe_image 
         
     except Exception as e:
-        print(f"Error in VTO synthesis: {e}")
+        print(f"Error in Vertex VTO synthesis: {e}")
         return None

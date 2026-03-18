@@ -16,11 +16,12 @@ def main():
         "Nordstrom": 0.0
     }
     print("Generating Base Vibe via Vertex AI...")
-    base_vibe = inference.generate_base_vibe(brand_weights)
-    if not base_vibe:
+    base_vibe_dict = inference.generate_base_vibe(brand_weights)
+    if not base_vibe_dict or "standard" not in base_vibe_dict:
         print("Failed to generate base vibe!")
         sys.exit(1)
     
+    base_vibe = base_vibe_dict["standard"]
     base_vibe.save("test_base_vibe.jpg")
     print("Base vibe generated and saved as test_base_vibe.jpg")
 
