@@ -1,4 +1,5 @@
 import streamlit as st
+import random
 from PIL import Image
 import io
 import inference
@@ -163,35 +164,113 @@ if st.session_state.base_vibe_standard and st.session_state.base_vibe_no_acc and
     
     if st.button("Place the Dress on the Model Variations Above"):
         with st.spinner("Executing Virtual Try-On via Google Native Vertex AI on BOTH variations..."):
-            _, col_r1, col_r2, _ = st.columns([1, 1, 1, 1])
-            
-            with col_r1:
-                st.markdown("**Standard Variation**")
-                res_standard = inference.synthesize_garment(
-                    st.session_state.base_vibe_standard, 
-                    garment_image,
-                    garment_category,
-                    garment_desc
-                )
-                if res_standard:
-                    w, h = res_standard.size
-                    st.image(res_standard, caption="VTO Complete", use_container_width=True)
-                else:
-                    st.error("Failed on Standard Variation")
-                    
-            with col_r2:
-                st.write("Synthesizing No Accessories Variation...")
-                final_no_acc = inference.synthesize_garment(
-                    st.session_state.base_vibe_no_acc, 
-                    garment_image,
-                    garment_category,
-                    garment_desc
-                )
-                if final_no_acc:
-                    st.image(final_no_acc, caption="VTO: No Accessories Variation", use_container_width=True)
-                else:
-                    st.error("Failed on No Accessories Variation")
-                    
+            res_standard = inference.synthesize_garment(
+                st.session_state.base_vibe_standard, 
+                garment_image,
+                garment_category,
+                garment_desc
+            )
+            if res_standard:
+                st.session_state.vto_standard = res_standard
+            else:
+                st.error("Failed on Standard Variation")
+                
+            final_no_acc = inference.synthesize_garment(
+                st.session_state.base_vibe_no_acc, 
+                garment_image,
+                garment_category,
+                garment_desc
+            )
+            if final_no_acc:
+                st.session_state.vto_no_acc = final_no_acc
+            else:
+                st.error("Failed on No Accessories Variation")
+                
         st.success("Virtual Try-On successfully completed for both variations!")
+        st.session_state.try_on_complete = True
+
+    if st.session_state.get('try_on_complete', False) and 'vto_standard' in st.session_state and 'vto_no_acc' in st.session_state:
+        st.markdown("### Original Try-On Results")
+        _, col_r1, col_r2, _ = st.columns([1, 1, 1, 1])
+        with col_r1:
+            st.markdown("**Standard Variation**")
+            st.image(st.session_state.vto_standard, caption="VTO Complete", use_container_width=True)
+        with col_r2:
+            st.markdown("**No Accessories Variation**")
+            st.image(st.session_state.vto_no_acc, caption="VTO: No Accessories Variation", use_container_width=True)
+
 elif uploaded_garment is not None and not st.session_state.base_vibe_standard:
     st.warning("Please generate Base Vibes first before synthesizing the garment.")
+
+# Stage C: Optimization Workflow
+if st.session_state.get('try_on_complete', False):
+    st.markdown("---")
+    st.markdown("### You've now placed the above images on your website and received orders.", unsafe_allow_html=True)
+    st.markdown("<span style='font-size: 0.85em; font-weight: normal;'>Here is the data on sales: the dresses are selling in the size and location shown below.<br>You can tap Optimize to get an updated optimal image that you can add to your website</span><br><br>", unsafe_allow_html=True)
+    
+    if 'sim_size' not in st.session_state:
+        st.session_state.sim_size = random.choice(["Small", "Medium", "Large"])
+    if 'sim_location' not in st.session_state:
+        st.session_state.sim_location = random.choice(["Mexico", "USA"])
+        
+    st.markdown(f"**Size:** {st.session_state.sim_size} &nbsp;&nbsp;|&nbsp;&nbsp; **Location:** {st.session_state.sim_location}")
+    st.write("")
+    
+    if st.button("Optimize Model Images"):
+        with st.spinner("Generating Optimized Vibes and re-running Virtual Try-On..."):
+            opt_prompt = custom_scene_prompt + ", " if custom_scene_prompt.strip() else ""
+            
+            if st.session_state.sim_location == "Mexico":
+                opt_prompt += "Change the model to a 30 to 40-year-old Latina Model with light brown hair and hazel eyes, "
+            elif st.session_state.sim_location == "USA":
+                opt_prompt += "Change the model to a 30 to 40-year-old Caucasian model with blonde hair and blue eyes, "
+                
+            if st.session_state.sim_size == "Small":
+                opt_prompt += "and make the model petite in size"
+            elif st.session_state.sim_size == "Medium":
+                opt_prompt += "and keep the model size as is"
+            elif st.session_state.sim_size == "Large":
+                opt_prompt += "and make the model plus size"
+                
+            float_weights = {b: val / 100.0 for b, val in st.session_state.brand_weights.items()}
+            opt_generated_images = inference.generate_base_vibe(float_weights, opt_prompt)
+            
+            if opt_generated_images and 'standard' in opt_generated_images and 'no_accessories' in opt_generated_images:
+                st.session_state.opt_base_vibe_standard = opt_generated_images['standard']
+                st.session_state.opt_base_vibe_no_acc = opt_generated_images['no_accessories']
+                
+                garment_image = Image.open(uploaded_garment)
+                
+                opt_res_standard = inference.synthesize_garment(
+                    st.session_state.opt_base_vibe_standard, 
+                    garment_image,
+                    garment_category,
+                    garment_desc
+                )
+                if opt_res_standard:
+                    st.session_state.opt_vto_standard = opt_res_standard
+                
+                opt_final_no_acc = inference.synthesize_garment(
+                    st.session_state.opt_base_vibe_no_acc, 
+                    garment_image,
+                    garment_category,
+                    garment_desc
+                )
+                if opt_final_no_acc:
+                    st.session_state.opt_vto_no_acc = opt_final_no_acc
+                    
+                st.session_state.opt_complete = True
+                st.success("Optimization Virtual Try-On successfully completed!")
+            else:
+                st.error("Failed to generate optimized base vibe.")
+                
+    if st.session_state.get('opt_complete', False) and 'opt_vto_standard' in st.session_state and 'opt_vto_no_acc' in st.session_state:
+        st.markdown("### Optimized Try-On Results")
+        _, col_o1, col_o2, _ = st.columns([1, 1, 1, 1])
+        with col_o1:
+            st.markdown("**Optimized Standard Variation**")
+            st.image(st.session_state.opt_vto_standard, caption="Optimized VTO Complete", use_container_width=True)
+        with col_o2:
+            st.markdown("**Optimized No Accessories Variation**")
+            st.image(st.session_state.opt_vto_no_acc, caption="Optimized VTO: No Accessories", use_container_width=True)
+
