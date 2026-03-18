@@ -158,7 +158,8 @@ def generate_base_vibe(brand_weights, custom_scene_prompt=None):
         final_prompts = json.loads(text_resp)
         print(f"Blended Prompts Successful:\nStandard: {final_prompts.get('standard')}\nNo Acc: {final_prompts.get('no_accessories')}\n")
     except Exception as e:
-        print(f"Failed to synthesize blended prompt JSON: {e}\nRaw Response: {response.text}")
+        raw_res = response.text if 'response' in locals() and hasattr(response, 'text') else "No response object"
+        print(f"Failed to synthesize blended prompt JSON: {e}\nRaw Response: {raw_res}")
         return None
         
     # Step 3: Use Imagen 3 to render BOTH blended prompts
