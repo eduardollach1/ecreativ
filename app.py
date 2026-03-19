@@ -136,7 +136,10 @@ if st.button("Generate Vibe Model, Pose & Scene"):
             st.session_state.base_vibe_no_acc = generated_images['no_accessories']
             st.success("Base Vibes generated successfully!")
         else:
-            st.error("Failed to generate base vibe. Ensure at least one weight > 0.")
+            if isinstance(generated_images, dict) and "error" in generated_images:
+                st.error(generated_images["error"])
+            else:
+                st.error("Failed to generate base vibe. Ensure at least one weight > 0.")
 
 if st.session_state.base_vibe_standard and st.session_state.base_vibe_no_acc:
     st.write("### Generated Base Vibes")
@@ -262,7 +265,10 @@ if st.session_state.get('try_on_complete', False):
                 st.session_state.opt_complete = True
                 st.success("Optimization Virtual Try-On successfully completed!")
             else:
-                st.error("Failed to generate optimized base vibe.")
+                if isinstance(opt_generated_images, dict) and "error" in opt_generated_images:
+                    st.error(opt_generated_images["error"])
+                else:
+                    st.error("Failed to generate optimized base vibe.")
                 
     if st.session_state.get('opt_complete', False) and 'opt_vto_standard' in st.session_state and 'opt_vto_no_acc' in st.session_state:
         st.markdown("### Optimized Try-On Results")

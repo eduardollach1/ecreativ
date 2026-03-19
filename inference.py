@@ -46,7 +46,7 @@ def authenticate():
             token.write(creds.to_json())
     return creds
 
-def init_vertex_ai():
+def get_vertex_credentials():
     # 1. Permanent Cloud Auth: Check for Hugging Face Secret / Env Var
     gcp_sa_key = os.environ.get("GCP_SA_KEY")
     if gcp_sa_key:
@@ -54,9 +54,8 @@ def init_vertex_ai():
             sa_info = json.loads(gcp_sa_key)
             creds = service_account.Credentials.from_service_account_info(sa_info)
             PROJECT_ID = sa_info.get("project_id", "gen-lang-client-0232437645")
-            vertexai.init(project=PROJECT_ID, location="us-central1", credentials=creds)
-            print("Successfully initialized Vertex AI via GCP_SA_KEY environment variable.")
-            return
+            print("Successfully loaded Vertex AI creds via GCP_SA_KEY environment variable.")
+            return PROJECT_ID, creds
         except Exception as e:
             print(f"Failed to load GCP_SA_KEY Secret: {e}")
 
@@ -67,22 +66,20 @@ def init_vertex_ai():
             creds = service_account.Credentials.from_service_account_file(sa_file)
             with open(sa_file, 'r') as f:
                 PROJECT_ID = json.load(f).get("project_id", "gen-lang-client-0232437645")
-            vertexai.init(project=PROJECT_ID, location="us-central1", credentials=creds)
-            print("Successfully initialized Vertex AI via local service_account.json.")
-            return
+            print("Successfully loaded Vertex AI creds via local service_account.json.")
+            return PROJECT_ID, creds
         except Exception as e:
             print(f"Failed to load service_account.json: {e}")
 
     # 3. Fallback: Cloud Run Native ADC
     try:
-        if os.environ.get("K_SERVICE") or os.environ.get("GOOGLE_CLOUD_PROJECT"):
+        if os.environ.get("K_SERVICE") or os.environ.get("GOOGLE_CLOUD_PROJECT") or os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"):
             creds, project_id = google.auth.default()
             PROJECT_ID = project_id or "gen-lang-client-0232437645"
-            vertexai.init(project=PROJECT_ID, location="us-central1", credentials=creds)
-            print("Successfully initialized Vertex AI via Google Cloud ADC.")
-            return
+            print("Successfully loaded Vertex AI creds via Google Cloud ADC.")
+            return PROJECT_ID, creds
     except Exception as e:
-        print(f"Fallback to local auth stream: {e}")
+        print(f"Fallback to ADC failed: {e}")
 
     # 4. Final Fallback: The 24-hour Temporary OAuth Login
     print("Falling back to temporary 24-hour OAuth Token Login...")
@@ -92,7 +89,15 @@ def init_vertex_ai():
         PROJECT_ID = client_config.get("installed", {}).get("project_id", "gen-lang-client-0232437645")
     
     creds = authenticate()
-    vertexai.init(project=PROJECT_ID, location="us-central1", credentials=creds)
+    if creds and not creds.valid:
+        if creds.expired and creds.refresh_token:
+            from google.auth.transport.requests import Request
+            creds.refresh(Request())
+    return PROJECT_ID, creds
+
+def init_vertex_ai():
+    project_id, creds = get_vertex_credentials()
+    vertexai.init(project=project_id, location="us-central1", credentials=creds)
 
 def load_vibe_config():
     with open(os.path.join(BASE_DIR, "vibe_config.json"), "r") as f:
@@ -160,7 +165,7 @@ def generate_base_vibe(brand_weights, custom_scene_prompt=None):
     except Exception as e:
         raw_res = response.text if 'response' in locals() and hasattr(response, 'text') else "No response object"
         print(f"Failed to synthesize blended prompt JSON: {e}\nRaw Response: {raw_res}")
-        return None
+        return {"error": f"Gemini Prompt Synthesis Failed: {str(e)}"}
         
     # Step 3: Use Imagen 3 to render BOTH blended prompts
     print("Pinging Vertex AI Imagen 3 to dynamically render both Vibes...")
@@ -182,10 +187,11 @@ def generate_base_vibe(brand_weights, custom_scene_prompt=None):
                 results[key] = Image.open(output_path).convert("RGB")
                 
         print("Latent Space Image calculations complete!")
-        return results if len(results) == 2 else None
+        return results if len(results) == 2 else {"error": "Imagen 3 returned partial results."}
     except Exception as e:
         print(f"Imagen 3 Generation failed: {e}")
-        return None
+        import traceback
+        return {"error": f"Imagen 3 API Error: {str(e)}\nTraceback: {traceback.format_exc()}"}
 
 def synthesize_garment(base_vibe_image, garment_image, category, garment_desc):
     """
@@ -196,14 +202,11 @@ def synthesize_garment(base_vibe_image, garment_image, category, garment_desc):
     try:
         print(f"Triggering virtual-try-on-001 with category: {category} | desc: {garment_desc}")
         
-        creds = authenticate()
-        from google.auth.transport.requests import Request
-        if creds and not creds.token:
-            creds.refresh(Request())
+        project_id, creds = get_vertex_credentials()
             
         client = genai.Client(
             vertexai=True, 
-            project="gen-lang-client-0232437645", 
+            project=project_id, 
             location="us-central1", 
             credentials=creds
         )
