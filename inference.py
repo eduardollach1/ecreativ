@@ -130,8 +130,10 @@ def generate_base_vibe(brand_weights, custom_scene_prompt=None):
     
     # Step 2: Use Gemini 1.5 Pro to blend them into distinct variations
     print("\nAsking Gemini 1.5 Pro to synthesize the final Phase 4 Vibe prompts...")
-    legacy_genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
-    model = legacy_genai.GenerativeModel("nano-banana-pro-preview")
+    project_id, creds = get_vertex_credentials()
+    vertexai.init(project=project_id, location="us-central1", credentials=creds)
+    from vertexai.generative_models import GenerativeModel
+    model = GenerativeModel("gemini-1.5-pro")
     
     blending_prompt = (
         "You are an expert fashion AI. I have several 'master prompts' from different clothing brands, "
