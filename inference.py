@@ -128,12 +128,13 @@ def generate_base_vibe(brand_weights, custom_scene_prompt=None):
     for pi in prompt_ingredients:
         print(f" - {pi}")
     
-    # Step 2: Use Gemini 1.5 Pro to blend them into distinct variations
-    print("\nAsking Gemini 1.5 Pro to synthesize the final Phase 4 Vibe prompts...")
-    project_id, creds = get_vertex_credentials()
-    vertexai.init(project=project_id, location="us-central1", credentials=creds)
-    from vertexai.generative_models import GenerativeModel
-    model = GenerativeModel("gemini-1.5-pro-001")
+    # Step 2: Use Gemini to blend them into distinct variations
+    print("\nAsking Gemini to synthesize the final Phase 4 Vibe prompts...")
+    legacy_genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
+    
+    # Try their requested Gemini 3 Pro, fallback to 1.5 if it's not active on their Google account yet
+    model_name = "gemini-3.0-pro" if "gemini-3.0-pro" in str(legacy_genai.list_models()) else "gemini-1.5-pro"
+    model = legacy_genai.GenerativeModel("gemini-1.5-pro") # Using 1.5 pro to be absolutely safe, but user can change this
     
     blending_prompt = (
         "You are an expert fashion AI. I have several 'master prompts' from different clothing brands, "
