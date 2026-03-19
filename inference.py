@@ -133,7 +133,7 @@ def generate_base_vibe(brand_weights, custom_scene_prompt=None):
     project_id, creds = get_vertex_credentials()
     vertexai.init(project=project_id, location="us-central1", credentials=creds)
     from vertexai.generative_models import GenerativeModel
-    model = GenerativeModel("gemini-1.5-pro")
+    model = GenerativeModel("gemini-1.5-pro-001")
     
     blending_prompt = (
         "You are an expert fashion AI. I have several 'master prompts' from different clothing brands, "
