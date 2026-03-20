@@ -132,9 +132,8 @@ def generate_base_vibe(brand_weights, custom_scene_prompt=None):
     print("\nAsking Gemini to synthesize the final Phase 4 Vibe prompts...")
     legacy_genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
     
-    # Try their requested Gemini 3 Pro, fallback to 1.5 if it's not active on their Google account yet
-    model_name = "gemini-3.0-pro" if "gemini-3.0-pro" in str(legacy_genai.list_models()) else "gemini-1.5-pro"
-    model = legacy_genai.GenerativeModel("gemini-1.5-pro") # Using 1.5 pro to be absolutely safe, but user can change this
+    # Using the exact preview alias corresponding to Gemini 3 Pro on your account
+    model = legacy_genai.GenerativeModel("models/gemini-3-pro-preview")
     
     blending_prompt = (
         "You are an expert fashion AI. I have several 'master prompts' from different clothing brands, "
