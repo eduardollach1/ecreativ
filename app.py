@@ -173,7 +173,9 @@ if st.session_state.base_vibe_standard and st.session_state.base_vibe_no_acc and
                 garment_category,
                 garment_desc
             )
-            if res_standard:
+            if isinstance(res_standard, dict) and "error" in res_standard:
+                st.error(res_standard["error"])
+            elif res_standard:
                 st.session_state.vto_standard = res_standard
             else:
                 st.error("Failed on Standard Variation")
@@ -184,7 +186,9 @@ if st.session_state.base_vibe_standard and st.session_state.base_vibe_no_acc and
                 garment_category,
                 garment_desc
             )
-            if final_no_acc:
+            if isinstance(final_no_acc, dict) and "error" in final_no_acc:
+                st.error(final_no_acc["error"])
+            elif final_no_acc:
                 st.session_state.vto_no_acc = final_no_acc
             else:
                 st.error("Failed on No Accessories Variation")
@@ -250,7 +254,9 @@ if st.session_state.get('try_on_complete', False):
                     garment_category,
                     garment_desc
                 )
-                if opt_res_standard:
+                if isinstance(opt_res_standard, dict) and "error" in opt_res_standard:
+                    st.error(opt_res_standard["error"])
+                elif opt_res_standard:
                     st.session_state.opt_vto_standard = opt_res_standard
                 
                 opt_final_no_acc = inference.synthesize_garment(
@@ -259,7 +265,9 @@ if st.session_state.get('try_on_complete', False):
                     garment_category,
                     garment_desc
                 )
-                if opt_final_no_acc:
+                if isinstance(opt_final_no_acc, dict) and "error" in opt_final_no_acc:
+                    st.error(opt_final_no_acc["error"])
+                elif opt_final_no_acc:
                     st.session_state.opt_vto_no_acc = opt_final_no_acc
                     
                 st.session_state.opt_complete = True

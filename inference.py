@@ -243,4 +243,5 @@ def synthesize_garment(base_vibe_image, garment_image, category, garment_desc):
         
     except Exception as e:
         print(f"Error in Vertex VTO synthesis: {e}")
-        return None
+        import traceback
+        return {"error": f"**Google Virtual Try-On Engine Failed:** {str(e)}\n\n*Traceback:* {traceback.format_exc()}"}
