@@ -52,7 +52,8 @@ def get_vertex_credentials():
     if gcp_sa_key:
         try:
             sa_info = json.loads(gcp_sa_key)
-            creds = service_account.Credentials.from_service_account_info(sa_info)
+            scopes = ['https://www.googleapis.com/auth/cloud-platform']
+            creds = service_account.Credentials.from_service_account_info(sa_info, scopes=scopes)
             PROJECT_ID = sa_info.get("project_id", "gen-lang-client-0232437645")
             print("Successfully loaded Vertex AI creds via GCP_SA_KEY environment variable.")
             return PROJECT_ID, creds
@@ -63,7 +64,8 @@ def get_vertex_credentials():
     sa_file = os.path.join(BASE_DIR, "service_account.json")
     if os.path.exists(sa_file):
         try:
-            creds = service_account.Credentials.from_service_account_file(sa_file)
+            scopes = ['https://www.googleapis.com/auth/cloud-platform']
+            creds = service_account.Credentials.from_service_account_file(sa_file, scopes=scopes)
             with open(sa_file, 'r') as f:
                 PROJECT_ID = json.load(f).get("project_id", "gen-lang-client-0232437645")
             print("Successfully loaded Vertex AI creds via local service_account.json.")
