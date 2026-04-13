@@ -209,10 +209,10 @@ with g_col1:
     st.markdown(upload_html, unsafe_allow_html=True)
     st.button("Upload my own", on_click=select_garment, args=("Upload my own",), use_container_width=True, type="secondary")
 with g_col2:
-    render_centered_square("/Users/eduardo.llach/.gemini/antigravity/brain/d0835087-0bcd-4184-83ba-be95cfd45842/media__1776109338088.jpg", 100)
+    render_centered_square("zara_black_dress.jpg", 100)
     st.button("Zara Black Dress", on_click=select_garment, args=("Zara Black Cocktail Dress",), use_container_width=True, type="secondary")
 with g_col3:
-    render_centered_square("/Users/eduardo.llach/.gemini/antigravity/brain/d0835087-0bcd-4184-83ba-be95cfd45842/media__1776109351970.jpg", 100)
+    render_centered_square("ralph_lauren_red.jpg", 100)
     st.button("Ralph Lauren Red", on_click=select_garment, args=("Ralph Lauren Red Cocktail Dress",), use_container_width=True, type="secondary")
 
 st.markdown(f"**Selected Source:** {st.session_state.garment_option}")
@@ -224,9 +224,9 @@ selected_garment_path = None
 if garment_option == "Upload my own":
     uploaded_garment = st.file_uploader("Upload Garment Image (PNG/JPG)", type=["png", "jpg", "jpeg"])
 elif garment_option == "Zara Black Cocktail Dress":
-    selected_garment_path = "/Users/eduardo.llach/.gemini/antigravity/brain/d0835087-0bcd-4184-83ba-be95cfd45842/media__1776109338088.jpg"
+    selected_garment_path = "zara_black_dress.jpg"
 elif garment_option == "Ralph Lauren Red Cocktail Dress":
-    selected_garment_path = "/Users/eduardo.llach/.gemini/antigravity/brain/d0835087-0bcd-4184-83ba-be95cfd45842/media__1776109351970.jpg"
+    selected_garment_path = "ralph_lauren_red.jpg"
 
 col_g1, col_g2 = st.columns(2)
 with col_g1:
