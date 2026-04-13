@@ -1,0 +1,8 @@
+.env
+token.json
+venv/
+__pycache__/
+*.pyc
+.DS_Store
+temp_*.jpg
+*.log

@@ -3,6 +3,7 @@ import random
 from PIL import Image
 import io
 import inference
+import base64
 
 def load_resized_image(image_path, target_height=75):
     img = Image.open(image_path)
@@ -14,18 +15,37 @@ st.set_page_config(page_title="eCreativ V1.1 - The Fashion Vibe-Engine", layout=
 
 st.markdown("""
 <style>
-div.stButton > button:first-child {
+div[data-testid="stButton"] button[kind="secondary"] {
     background-color: #e0f2fe;
     color: #0369a1;
     border: 1px solid #bae6fd;
 }
-div.stButton > button:first-child:hover {
+div[data-testid="stButton"] button[kind="secondary"]:hover {
     background-color: #bae6fd;
     color: #0284c7;
     border: 1px solid #7dd3fc;
 }
 </style>
 """, unsafe_allow_html=True)
+
+def render_centered_image(image_path, target_height=60):
+    img = load_resized_image(image_path, target_height)
+    buffered = io.BytesIO()
+    img.save(buffered, format="PNG")
+    img_str = base64.b64encode(buffered.getvalue()).decode()
+    html = f'<div style="display: flex; justify-content: center; align-items: center; height: {target_height}px;"><img src="data:image/png;base64,{img_str}" style="max-height: 100%;"></div>'
+    st.markdown(html, unsafe_allow_html=True)
+
+def render_centered_square(image_path, size=100):
+    img = Image.open(image_path)
+    img.thumbnail((size, size), Image.Resampling.LANCZOS)
+    buffered = io.BytesIO()
+    img.save(buffered, format="PNG")
+    img_str = base64.b64encode(buffered.getvalue()).decode()
+    html = f'<div style="display: flex; justify-content: center; align-items: center; height: {size}px;"><img src="data:image/png;base64,{img_str}"></div>'
+    st.markdown(html, unsafe_allow_html=True)
+
+
 
 # Custom Header using the eCreativ Logo image
 col_logo, col_v, _ = st.columns([1.5, 1, 6])
@@ -34,7 +54,7 @@ with col_logo:
 with col_v:
     st.markdown("<h4 style='margin-top: 45px; color: #268bd2;'>v1.1</h4>", unsafe_allow_html=True)
 
-st.markdown("### Fashion Model & Scene based on Successful Brands & Retailers in the category: <span style='color: #268bd2; font-weight: bold;'>Cocktail Dresses</span><br><span style='font-size: 0.85em; font-weight: normal;'>We've analyzed 6 successful fashion images for Cocktail Dresses, and now you can create a best in class mix for your Cocktail Dress garments</span>", unsafe_allow_html=True)
+st.markdown("### Fashion Model & Scene based on Successful Brands & Retailers in the category: <span style='color: #268bd2; font-weight: bold;'>Cocktail Dresses</span><br><span style='font-size: 0.85em; font-weight: normal;'>We've analyzed 6 sets of successful fashion images for Cocktail Dresses, and now you can create a best in class mix for your Cocktail Dress garments</span>", unsafe_allow_html=True)
 
 # Stage A: The Brand Mixer
 st.header("Stage A: The Brand Mixer")
@@ -94,13 +114,20 @@ st.write("") # Spacer
 r1_col1, r1_col2, r1_col3, _ = st.columns([1, 1, 1, 3])
 
 with r1_col1:
-    st.image(load_resized_image("ralph_lauren_logo.png"))
-    st.slider("Ralph Lauren", min_value=0, max_value=100, step=5, format="%d%%", key="Ralph Lauren_slider", on_change=update_sliders, args=("Ralph Lauren",), label_visibility="collapsed")
+    render_centered_image("ralph_lauren_logo.png", 60)
 with r1_col2:
-    st.image(load_resized_image("zara_logo.png"))
-    st.slider("Zara", min_value=0, max_value=100, step=5, format="%d%%", key="Zara_slider", on_change=update_sliders, args=("Zara",), label_visibility="collapsed")
+    render_centered_image("zara_logo.png", 60)
 with r1_col3:
-    st.image(load_resized_image("liujo_logo.png"))
+    render_centered_image("liujo_logo.png", 60)
+
+st.markdown("<div style='height: 25px;'></div>", unsafe_allow_html=True) # Spacer between logos and sliders
+r1s_col1, r1s_col2, r1s_col3, _ = st.columns([1, 1, 1, 3])
+
+with r1s_col1:
+    st.slider("Ralph Lauren", min_value=0, max_value=100, step=5, format="%d%%", key="Ralph Lauren_slider", on_change=update_sliders, args=("Ralph Lauren",), label_visibility="collapsed")
+with r1s_col2:
+    st.slider("Zara", min_value=0, max_value=100, step=5, format="%d%%", key="Zara_slider", on_change=update_sliders, args=("Zara",), label_visibility="collapsed")
+with r1s_col3:
     st.slider("Liu Jo", min_value=0, max_value=100, step=5, format="%d%%", key="Liu Jo_slider", on_change=update_sliders, args=("Liu Jo",), label_visibility="collapsed")
 
 st.write("") # Spacer
@@ -109,14 +136,23 @@ st.write("") # Spacer
 r2_col1, r2_col2, r2_col3, _ = st.columns([1, 1, 1, 3])
 
 with r2_col1:
-    st.image(load_resized_image("liverpool_logo.png"))
-    st.slider("Liverpool", min_value=0, max_value=100, step=5, format="%d%%", key="Liverpool_slider", on_change=update_sliders, args=("Liverpool",), label_visibility="collapsed")
+    render_centered_image("liverpool_logo.png", 60)
 with r2_col2:
-    st.image(load_resized_image("nordstrom_logo.png"))
-    st.slider("Nordstrom", min_value=0, max_value=100, step=5, format="%d%%", key="Nordstrom_slider", on_change=update_sliders, args=("Nordstrom",), label_visibility="collapsed")
+    render_centered_image("nordstrom_logo.png", 60)
 with r2_col3:
-    st.image(load_resized_image("neiman_marcus_logo.png"))
+    render_centered_image("neiman_marcus_logo.png", 60)
+
+st.markdown("<div style='height: 25px;'></div>", unsafe_allow_html=True) # Spacer between logos and sliders
+r2s_col1, r2s_col2, r2s_col3, _ = st.columns([1, 1, 1, 3])
+
+with r2s_col1:
+    st.slider("Liverpool", min_value=0, max_value=100, step=5, format="%d%%", key="Liverpool_slider", on_change=update_sliders, args=("Liverpool",), label_visibility="collapsed")
+with r2s_col2:
+    st.slider("Nordstrom", min_value=0, max_value=100, step=5, format="%d%%", key="Nordstrom_slider", on_change=update_sliders, args=("Nordstrom",), label_visibility="collapsed")
+with r2s_col3:
     st.slider("Neiman Marcus", min_value=0, max_value=100, step=5, format="%d%%", key="Neiman Marcus_slider", on_change=update_sliders, args=("Neiman Marcus",), label_visibility="collapsed")
+
+
 
 custom_scene_prompt = st.text_area("Custom Scene/Pose Prompt (Optional)", placeholder="e.g. Model sitting at a Parisian cafe holding a red umbrella")
 
@@ -126,7 +162,7 @@ if 'base_vibe_standard' not in st.session_state:
 if 'base_vibe_no_acc' not in st.session_state:
     st.session_state.base_vibe_no_acc = None
 
-if st.button("Generate Vibe Model, Pose & Scene"):
+if st.button("Generate Custom Model, Pose & Scene", type="primary"):
     with st.spinner("Synthesizing vibe (Standard & No Accessories)..."):
         float_weights = {b: val / 100.0 for b, val in st.session_state.brand_weights.items()}
         print(f"DEBUG APP.PY - Calling inference with weights: {float_weights}")
@@ -151,9 +187,46 @@ if st.session_state.base_vibe_standard and st.session_state.base_vibe_no_acc:
 
 # Stage B: Garment Synthesis
 st.header("Stage B: Garment Virtual Try-On")
-st.write("Upload your garment (e.g., a cocktail dress) to place on your model.")
+st.write("Upload your garment (e.g., a cocktail dress) to place on your model, or choose one of our examples.")
 
-uploaded_garment = st.file_uploader("Upload Garment Image (PNG/JPG)", type=["png", "jpg", "jpeg"])
+if 'garment_option' not in st.session_state:
+    st.session_state.garment_option = "Upload my own"
+
+def select_garment(option):
+    st.session_state.garment_option = option
+
+g_col1, g_col2, g_col3, _ = st.columns([1.5, 1.5, 1.5, 2.5])
+with g_col1:
+    upload_html = '''
+    <div style="display: flex; justify-content: center; align-items: center; height: 100px;">
+        <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="#268bd2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+        </svg>
+    </div>
+    '''
+    st.markdown(upload_html, unsafe_allow_html=True)
+    st.button("Upload my own", on_click=select_garment, args=("Upload my own",), use_container_width=True, type="secondary")
+with g_col2:
+    render_centered_square("/Users/eduardo.llach/.gemini/antigravity/brain/d0835087-0bcd-4184-83ba-be95cfd45842/media__1776109338088.jpg", 100)
+    st.button("Zara Black Dress", on_click=select_garment, args=("Zara Black Cocktail Dress",), use_container_width=True, type="secondary")
+with g_col3:
+    render_centered_square("/Users/eduardo.llach/.gemini/antigravity/brain/d0835087-0bcd-4184-83ba-be95cfd45842/media__1776109351970.jpg", 100)
+    st.button("Ralph Lauren Red", on_click=select_garment, args=("Ralph Lauren Red Cocktail Dress",), use_container_width=True, type="secondary")
+
+st.markdown(f"**Selected Source:** {st.session_state.garment_option}")
+
+garment_option = st.session_state.garment_option
+uploaded_garment = None
+selected_garment_path = None
+
+if garment_option == "Upload my own":
+    uploaded_garment = st.file_uploader("Upload Garment Image (PNG/JPG)", type=["png", "jpg", "jpeg"])
+elif garment_option == "Zara Black Cocktail Dress":
+    selected_garment_path = "/Users/eduardo.llach/.gemini/antigravity/brain/d0835087-0bcd-4184-83ba-be95cfd45842/media__1776109338088.jpg"
+elif garment_option == "Ralph Lauren Red Cocktail Dress":
+    selected_garment_path = "/Users/eduardo.llach/.gemini/antigravity/brain/d0835087-0bcd-4184-83ba-be95cfd45842/media__1776109351970.jpg"
 
 col_g1, col_g2 = st.columns(2)
 with col_g1:
@@ -161,9 +234,14 @@ with col_g1:
 with col_g2:
     garment_desc = st.text_input("Garment Description (Optional)", placeholder="e.g. cute pink top, long black dress")
 
-if st.session_state.base_vibe_standard and st.session_state.base_vibe_no_acc and uploaded_garment is not None:
+garment_image = None
+if uploaded_garment is not None:
     garment_image = Image.open(uploaded_garment)
-    st.image(garment_image, caption="Uploaded Garment", width=200)
+elif selected_garment_path is not None:
+    garment_image = Image.open(selected_garment_path)
+
+if st.session_state.base_vibe_standard and st.session_state.base_vibe_no_acc and garment_image is not None:
+    st.image(garment_image, caption=garment_option if garment_option != "Upload my own" else "Uploaded Garment", width=200)
     
     if st.button("Place the Dress on the Model Variations Above"):
         with st.spinner("Executing Virtual Try-On via Google Native Vertex AI on BOTH variations..."):
@@ -206,7 +284,7 @@ if st.session_state.base_vibe_standard and st.session_state.base_vibe_no_acc and
             st.markdown("**No Accessories Variation**")
             st.image(st.session_state.vto_no_acc, caption="VTO: No Accessories Variation", use_container_width=True)
 
-elif uploaded_garment is not None and not st.session_state.base_vibe_standard:
+elif garment_image is not None and not st.session_state.base_vibe_standard:
     st.warning("Please generate Base Vibes first before synthesizing the garment.")
 
 # Stage C: Optimization Workflow
@@ -223,7 +301,38 @@ if st.session_state.get('try_on_complete', False):
     st.markdown(f"**Size:** {st.session_state.sim_size} &nbsp;&nbsp;|&nbsp;&nbsp; **Location:** {st.session_state.sim_location}")
     st.write("")
     
-    if st.button("Optimize Model Images"):
+    col_opt1, col_opt2 = st.columns(2)
+    with col_opt1:
+        st.selectbox("Option: You can override Sales Results and Select the Dress Size & Location of Sales to Optimize for", ["Small", "Medium", "Large"], key="sim_size")
+    with col_opt2:
+        st.selectbox("Select Target Location", ["Mexico", "USA"], key="sim_location")
+        
+    st.write("")
+
+    st.markdown("""
+    <style>
+    div.element-container:has(.optimize-marker) + div.element-container div[data-testid="stButton"] button {
+        background-color: #ccfbf1 !important; 
+        border-color: #99f6e4 !important;
+    }
+    div.element-container:has(.optimize-marker) + div.element-container div[data-testid="stButton"] button p {
+        color: #0f766e !important;
+        font-weight: 500 !important;
+    }
+    div.element-container:has(.optimize-marker) + div.element-container div[data-testid="stButton"] button:hover {
+        background-color: #99f6e4 !important;
+        border-color: #5eead4 !important;
+    }
+    div.element-container:has(.optimize-marker) + div.element-container div[data-testid="stButton"] button:hover p {
+        color: #115e59 !important;
+    }
+    </style>
+    <div class="optimize-marker" style="display: none;"></div>
+    """, unsafe_allow_html=True)
+    
+    opt_submitted = st.button("Optimize Model Images", use_container_width=True)
+
+    if opt_submitted:
         with st.spinner("Generating Optimized Vibes and re-running Virtual Try-On..."):
             opt_prompt = custom_scene_prompt + ", " if custom_scene_prompt.strip() else ""
             
@@ -245,8 +354,6 @@ if st.session_state.get('try_on_complete', False):
             if opt_generated_images and 'standard' in opt_generated_images and 'no_accessories' in opt_generated_images:
                 st.session_state.opt_base_vibe_standard = opt_generated_images['standard']
                 st.session_state.opt_base_vibe_no_acc = opt_generated_images['no_accessories']
-                
-                garment_image = Image.open(uploaded_garment)
                 
                 opt_res_standard = inference.synthesize_garment(
                     st.session_state.opt_base_vibe_standard, 
