@@ -134,8 +134,10 @@ def generate_base_vibe(brand_weights, custom_scene_prompt=None):
     print("\nAsking Gemini to synthesize the final Phase 4 Vibe prompts...")
     legacy_genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
     
-    # Using standard stable model for prompt synthesis
-    model = legacy_genai.GenerativeModel("models/gemini-2.5-flash")
+    # Get model dynamically from environment, defaulting to the absolute latest Gemini 3.5 Flash
+    text_model_name = os.environ.get("GEMINI_TEXT_MODEL", "models/gemini-3.5-flash")
+    print(f"Using model: {text_model_name} for prompt synthesis...")
+    model = legacy_genai.GenerativeModel(text_model_name)
     
     blending_prompt = (
         "You are an expert fashion AI. I have several 'master prompts' from different clothing brands, "
@@ -176,7 +178,9 @@ def generate_base_vibe(brand_weights, custom_scene_prompt=None):
     results = {}
     try:
         init_vertex_ai()
-        imagen_model = ImageGenerationModel.from_pretrained("imagen-3.0-generate-001")
+        imagen_model_name = os.environ.get("IMAGEN_IMAGE_MODEL", "imagen-3.0-generate-001")
+        print(f"Using Image Generation Model: {imagen_model_name}")
+        imagen_model = ImageGenerationModel.from_pretrained(imagen_model_name)
         
         for key, prompt in final_prompts.items():
             print(f"Generating Imagen 3 render for {key}...")
