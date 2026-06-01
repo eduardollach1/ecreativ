@@ -6,3 +6,5 @@ __pycache__/
 .DS_Store
 temp_*.jpg
 *.log
+*.bak
+test_models.py

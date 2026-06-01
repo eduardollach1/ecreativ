@@ -134,8 +134,8 @@ def generate_base_vibe(brand_weights, custom_scene_prompt=None):
     print("\nAsking Gemini to synthesize the final Phase 4 Vibe prompts...")
     legacy_genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
     
-    # Using the exact preview alias corresponding to Gemini 3 Pro on your account
-    model = legacy_genai.GenerativeModel("models/gemini-3-pro-preview")
+    # Using standard stable model for prompt synthesis
+    model = legacy_genai.GenerativeModel("models/gemini-2.5-flash")
     
     blending_prompt = (
         "You are an expert fashion AI. I have several 'master prompts' from different clothing brands, "

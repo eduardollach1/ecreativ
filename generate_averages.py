@@ -61,7 +61,7 @@ def init_vertex_ai():
 
 def synthesize_prompt(brand_name, image_paths):
     genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-    model = genai.GenerativeModel("nano-banana-pro-preview")
+    model = genai.GenerativeModel("models/gemini-2.5-flash")
     
     parts = []
     prompt_text = f"You are an expert fashion editorial creative director. Analyze the provided {len(image_paths)} images from the brand '{brand_name}'. Determine the mathematical 'average' of the model's appearance, the dominant pose, the exact style of the garments, the texture, and the background environment. Output ONLY a single, highly-detailed text prompt (under 100 words) that synthesizes these commonalities into one perfect fashion photograph. Do not include any introductory or concluding text. Be highly descriptive about lighting, model features, and clothing."
